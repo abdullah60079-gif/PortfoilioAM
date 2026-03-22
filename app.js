@@ -638,35 +638,39 @@
       });
     });
 
-    // Photo upload
-    const photoUpload = document.getElementById('photo-upload');
+    // Photo upload button
+    const photoUploadBtn = document.getElementById('photo-upload-btn');
     const photoInput = document.getElementById('a-photo');
     const photoPreview = document.getElementById('photo-preview');
-    photoUpload.addEventListener('click', () => photoInput.click());
+    const photoUrlInput = document.getElementById('a-photo-url');
+
+    photoUploadBtn.addEventListener('click', () => photoInput.click());
     photoInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      // Show preview
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        photoPreview.innerHTML = '<img src="' + ev.target.result + '" alt="Preview">';
-      };
-      reader.readAsDataURL(file);
+      showToast('Processing photo...');
+      try {
+        // Resize to square 400x400
+        const resized = await resizeProjectImage(file, 400, 400);
+        photoPreview.innerHTML = '<img src="' + resized + '" alt="Preview">';
 
-      // Upload to Firebase if available
-      if (storage) {
-        showToast('Uploading photo...');
-        const url = await uploadPhoto(file);
-        if (url) {
-          siteData.profile.photo = url;
-          showToast('Photo uploaded!');
+        if (storage) {
+          const ref = storage.ref().child('profile/' + Date.now() + '-' + file.name);
+          const blob = dataURLtoBlob(resized);
+          await ref.put(blob);
+          const firebaseUrl = await ref.getDownloadURL();
+          siteData.profile.photo = firebaseUrl;
+          photoUrlInput.value = firebaseUrl;
+          showToast('Photo uploaded to cloud!');
         } else {
-          // Fallback to data URL
-          siteData.profile.photo = photoPreview.querySelector('img')?.src || '';
-          showToast('Photo saved locally');
+          // Save as data URL (will be stored in Firestore)
+          siteData.profile.photo = resized;
+          photoUrlInput.value = '';
+          showToast('Photo saved!');
         }
-      } else {
-        siteData.profile.photo = photoPreview.querySelector('img')?.src || '';
+      } catch (err) {
+        console.error('Photo upload error:', err);
+        showToast('Photo processing failed.');
       }
     });
 
@@ -679,6 +683,11 @@
       siteData.profile.degreeShort = v('a-degree-short');
       siteData.profile.focus = v('a-focus');
       siteData.profile.location = v('a-location');
+      // Photo: use URL input if provided, otherwise keep existing
+      const photoUrl = v('a-photo-url');
+      if (photoUrl) {
+        siteData.profile.photo = photoUrl;
+      }
       await saveToFirebase('profile', siteData.profile);
       renderPortfolio();
       showToast('Profile saved!');
@@ -807,6 +816,7 @@
 
     if (p.photo) {
       document.getElementById('photo-preview').innerHTML = '<img src="' + p.photo + '" alt="Preview">';
+      document.getElementById('a-photo-url').value = p.photo;
     }
 
     renderEduList();

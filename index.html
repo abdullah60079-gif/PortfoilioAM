@@ -413,12 +413,18 @@
         </div>
         <div class="admin-field">
           <label>Profile Photo</label>
-          <div class="photo-upload" id="photo-upload">
-            <div class="photo-preview" id="photo-preview">
+          <div class="pj-img-wrap">
+            <div class="photo-preview" id="photo-preview" style="width:160px;height:160px;aspect-ratio:1;">
               <i data-lucide="upload" width="32" height="32"></i>
-              <span>Click or drag to upload</span>
+              <span>No photo</span>
             </div>
-            <input type="file" id="a-photo" accept="image/*" style="display:none;">
+            <div class="pj-img-actions">
+              <button type="button" class="btn btn-outline btn-sm" id="photo-upload-btn">Upload Photo</button>
+              <input type="file" id="a-photo" accept="image/*" style="display:none;">
+              <span class="pj-img-or">or</span>
+              <input type="url" id="a-photo-url" placeholder="Paste image URL (Imgur, etc.)">
+            </div>
+            <p class="pj-img-hint">Upload a square photo or paste a URL. Auto-cropped to square.</p>
           </div>
         </div>
         <button class="btn btn-primary" id="save-profile">Save Profile</button>
