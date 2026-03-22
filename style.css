@@ -1172,6 +1172,64 @@ a.contact-item:hover { color: var(--color-accent); }
   margin: 0;
 }
 
+/* Asset picker dropdown */
+.asset-picker-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+.asset-picker-wrap input {
+  width: 100%;
+}
+.asset-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 50;
+  display: none;
+  box-shadow: var(--shadow-lg);
+}
+.asset-dropdown.show {
+  display: block;
+}
+.asset-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  transition: background 0.15s ease;
+  border: none;
+  width: 100%;
+  text-align: left;
+  background: none;
+}
+.asset-dropdown-item:hover {
+  background: var(--color-accent-glow);
+  color: var(--color-accent);
+}
+.asset-dropdown-item img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.asset-dropdown-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ========== LIGHT MODE ENHANCEMENTS ========== */
 [data-theme="light"] .hero {
   background: linear-gradient(135deg, #f0f4f8 0%, #dce4ed 40%, #e0eaf4 100%);

@@ -4,6 +4,17 @@
   'use strict';
 
   /* ---------- DEFAULT DATA ---------- */
+  /* ---------- ASSET IMAGE REGISTRY ---------- */
+  // Add your image filenames here whenever you put a new image in the assets/ folder
+  const ASSET_IMAGES = [
+    'profile.jpg',
+    'favicon.png',
+    // Add project images below:
+    // 'project1.jpg',
+    // 'project2.jpg',
+    // 'project3.png',
+  ];
+
   const DEFAULT_DATA = {
     profile: {
       name: 'Md. Sakib Hasan',
@@ -13,7 +24,8 @@
       degreeShort: 'BSc in CSE (Network)',
       focus: 'Network & Cybersecurity',
       location: 'Bangladesh',
-      photo: ''
+      photo: '',
+      favicon: ''
     },
     education: [
       {
@@ -261,6 +273,16 @@
 
     // Page title
     document.title = p.name + ' — ' + p.title;
+
+    // Favicon — use dedicated favicon, then profile photo as fallback
+    const faviconLink = document.getElementById('favicon-link');
+    if (faviconLink) {
+      if (p.favicon) {
+        faviconLink.href = p.favicon;
+      } else if (p.photo) {
+        faviconLink.href = p.photo;
+      }
+    }
 
     // Re-init icons
     if (window.lucide) lucide.createIcons();
@@ -616,6 +638,7 @@
         dashDiv.style.display = 'block';
         errorMsg.style.display = 'none';
         populateAdminFields();
+        setTimeout(initAssetPickers, 100);
         if (window.lucide) lucide.createIcons();
       } else {
         errorMsg.style.display = 'block';
@@ -688,6 +711,9 @@
       if (photoUrl) {
         siteData.profile.photo = photoUrl;
       }
+      // Favicon
+      const faviconUrl = v('a-favicon-url');
+      siteData.profile.favicon = faviconUrl;
       await saveToFirebase('profile', siteData.profile);
       renderPortfolio();
       showToast('Profile saved!');
@@ -818,6 +844,7 @@
       document.getElementById('photo-preview').innerHTML = '<img src="' + p.photo + '" alt="Preview">';
       document.getElementById('a-photo-url').value = p.photo;
     }
+    document.getElementById('a-favicon-url').value = p.favicon || '';
 
     renderEduList();
     renderSkillList();
@@ -962,6 +989,15 @@
         }
       });
     });
+
+    // Attach asset pickers to URL inputs
+    setTimeout(() => {
+      c.querySelectorAll('.pj-image').forEach(input => {
+        if (!input.closest('.asset-picker-wrap')) {
+          attachAssetPicker(input);
+        }
+      });
+    }, 50);
   }
 
   // Resize image to exact dimensions with canvas
@@ -1025,6 +1061,70 @@
       image: el.querySelector('.pj-image').value.trim(),
       link: el.querySelector('.pj-link').value.trim()
     }));
+  }
+
+  /* ---------- ASSET IMAGE PICKER ---------- */
+  function attachAssetPicker(inputEl) {
+    if (!inputEl || ASSET_IMAGES.length === 0) return;
+
+    // Wrap input in a container
+    const wrap = document.createElement('div');
+    wrap.className = 'asset-picker-wrap';
+    inputEl.parentNode.insertBefore(wrap, inputEl);
+    wrap.appendChild(inputEl);
+
+    // Create dropdown
+    const dropdown = document.createElement('div');
+    dropdown.className = 'asset-dropdown';
+    dropdown.innerHTML = ASSET_IMAGES.map(name => 
+      '<button class="asset-dropdown-item" data-path="./assets/' + name + '">' +
+      '<img src="./assets/' + name + '" alt="' + name + '" onerror="this.style.display=\'none\'">' +
+      '<span>' + name + '</span>' +
+      '</button>'
+    ).join('');
+    wrap.appendChild(dropdown);
+
+    // Show on focus
+    inputEl.addEventListener('focus', () => dropdown.classList.add('show'));
+
+    // Select item
+    dropdown.querySelectorAll('.asset-dropdown-item').forEach(item => {
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        inputEl.value = item.dataset.path;
+        dropdown.classList.remove('show');
+        // Update preview if exists
+        const previewEl = inputEl.closest('.pj-img-wrap')?.querySelector('.pj-img-preview, .photo-preview');
+        if (previewEl) {
+          previewEl.innerHTML = '<img src="' + item.dataset.path + '" alt="Preview">';
+        }
+        // Trigger input event
+        inputEl.dispatchEvent(new Event('input'));
+      });
+    });
+
+    // Hide on blur
+    inputEl.addEventListener('blur', () => {
+      setTimeout(() => dropdown.classList.remove('show'), 200);
+    });
+  }
+
+  // Attach asset picker to all image URL inputs in admin panel
+  function initAssetPickers() {
+    // Profile photo URL
+    const photoUrl = document.getElementById('a-photo-url');
+    if (photoUrl) attachAssetPicker(photoUrl);
+
+    // Favicon URL
+    const faviconUrl = document.getElementById('a-favicon-url');
+    if (faviconUrl) attachAssetPicker(faviconUrl);
+
+    // Project image URLs (called after renderProjectList)
+    document.querySelectorAll('#project-list .pj-image').forEach(input => {
+      if (!input.closest('.asset-picker-wrap')) {
+        attachAssetPicker(input);
+      }
+    });
   }
 
   /* ---------- LOADER PARTICLES ---------- */
