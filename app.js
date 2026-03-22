@@ -131,6 +131,22 @@
   let storage = null;
   let fbConfig = null;
 
+  /* ---------- AUTO-CONNECT FIREBASE ---------- */
+  (function autoConnectFirebase() {
+    try {
+      firebaseApp = firebase.initializeApp({
+        apiKey: 'AIzaSyDacyL3hIIEcK04TrToA2G1Ttc3iIuL028',
+        projectId: 'my-portfolio-e846d',
+        storageBucket: 'my-portfolio-e846d.firebasestorage.app'
+      });
+      db = firebase.firestore();
+      storage = firebase.storage();
+      console.log('Firebase auto-connected');
+    } catch (e) {
+      console.error('Firebase auto-connect failed:', e);
+    }
+  })();
+
   /* ---------- FIREBASE ---------- */
   function initFirebase(config) {
     try {
@@ -1002,9 +1018,16 @@
   }
 
   /* ---------- INIT ---------- */
-  function init() {
+  async function init() {
     initTheme();
     initNavbar();
+
+    // Load data from Firebase first if available
+    if (db) {
+      const loaded = await loadFromFirebase();
+      if (loaded) console.log('Data loaded from Firebase');
+    }
+
     renderPortfolio();
     initParticles();
     setTimeout(initReveal, 100);
