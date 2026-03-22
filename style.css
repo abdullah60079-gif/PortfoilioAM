@@ -93,6 +93,93 @@
   --shadow-lg: 0 16px 40px rgba(11,26,48,0.1), 0 4px 12px rgba(8,145,178,0.08);
 }
 
+/* ========== LOADER SCREEN ========== */
+.loader-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+.loader-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.loader-screen canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.loader-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+}
+.loader-icon svg {
+  display: block;
+}
+.loader-ring {
+  animation: loaderSpin 1.4s linear infinite;
+  transform-origin: 30px 30px;
+}
+@keyframes loaderSpin {
+  to { transform: rotate(360deg); }
+}
+.loader-dot {
+  animation: loaderPulse 1.4s ease-in-out infinite;
+}
+@keyframes loaderPulse {
+  0%, 100% { opacity: 1; r: 4; }
+  50% { opacity: 0.5; r: 3; }
+}
+.loader-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+}
+.loader-dots::after {
+  content: '';
+  animation: loaderDots 1.5s steps(4, end) infinite;
+}
+@keyframes loaderDots {
+  0%  { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+}
+
+/* Hide main content while loading */
+body.loading .navbar,
+body.loading .hero,
+body.loading #about,
+body.loading #education,
+body.loading #skills,
+body.loading #projects,
+body.loading #contact,
+body.loading .footer {
+  opacity: 0;
+}
+body:not(.loading) .navbar,
+body:not(.loading) .hero,
+body:not(.loading) #about,
+body:not(.loading) #education,
+body:not(.loading) #skills,
+body:not(.loading) #projects,
+body:not(.loading) #contact,
+body:not(.loading) .footer {
+  opacity: 1;
+  transition: opacity 0.5s ease 0.2s;
+}
+
 /* ========== GLOBAL ========== */
 .container {
   width: 100%;

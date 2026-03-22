@@ -1017,20 +1017,86 @@
     }));
   }
 
+  /* ---------- LOADER PARTICLES ---------- */
+  function initLoaderParticles() {
+    const canvas = document.getElementById('loader-particles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, pts = [], animId;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    function create() {
+      pts = [];
+      const count = Math.min(60, Math.floor((w * h) / 18000));
+      for (let i = 0; i < count; i++) {
+        pts.push({
+          x: Math.random() * w, y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
+          r: Math.random() * 2 + 0.8,
+          cyan: Math.random() > 0.4
+        });
+      }
+    }
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i];
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+        const col = p.cyan ? '0,229,255' : '168,85,247';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + col + ',0.7)';
+        ctx.fill();
+        for (let j = i + 1; j < pts.length; j++) {
+          const q = pts[j];
+          const dx = p.x - q.x, dy = p.y - q.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y);
+            ctx.strokeStyle = 'rgba(' + col + ',' + ((1 - dist / 150) * 0.2) + ')';
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+          }
+        }
+      }
+      animId = requestAnimationFrame(draw);
+    }
+    resize(); create(); draw();
+    window.addEventListener('resize', () => { resize(); create(); });
+    return () => { cancelAnimationFrame(animId); };
+  }
+
   /* ---------- INIT ---------- */
   async function init() {
+    // Start loader particles
+    const stopLoaderParticles = initLoaderParticles();
+
     initTheme();
     initNavbar();
+    initParticles();
 
-    // Load data from Firebase first if available
+    // Load data from Firebase first
     if (db) {
       const loaded = await loadFromFirebase();
       if (loaded) console.log('Data loaded from Firebase');
     }
 
     renderPortfolio();
-    initParticles();
-    setTimeout(initReveal, 100);
+
+    // Dismiss loader, show content
+    const loader = document.getElementById('loader-screen');
+    if (loader) loader.classList.add('hidden');
+    document.body.classList.remove('loading');
+    if (stopLoaderParticles) stopLoaderParticles();
+    setTimeout(() => { if (loader) loader.remove(); }, 600);
+
+    setTimeout(initReveal, 200);
     initAdmin();
     if (window.lucide) lucide.createIcons();
   }
