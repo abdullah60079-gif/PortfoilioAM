@@ -7,7 +7,7 @@
   /* ---------- ASSET IMAGE REGISTRY ---------- */
   // Add your image filenames here whenever you put a new image in the assets/ folder
   const ASSET_IMAGES = [
-    'profile.jpg',
+    'Maruf.jpg',
     'favicon.png',
     // Add project images below:
     // 'project1.jpg',
